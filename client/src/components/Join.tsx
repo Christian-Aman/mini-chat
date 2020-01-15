@@ -1,16 +1,17 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import io from 'socket.io-client';
 
-import { updateConnection } from '../store/actions/chat';
+import { updateSocketConnection } from '../store/actions/system';
 
-interface Props {}
+interface Props {
+  updateSocketConnection: (name: string) => void;
+}
 
 let socket;
 
-const Join: React.FC<Props> = () => {
+const Join: React.FC<Props> = ({ updateSocketConnection }) => {
   const clickHandler = (): void => {
-    socket = io('localhost:5000');
+    updateSocketConnection('Chrille');
   };
 
   return (
@@ -21,4 +22,4 @@ const Join: React.FC<Props> = () => {
   );
 };
 
-export default connect(null, { updateConnection })(Join);
+export default connect(null, { updateSocketConnection })(Join);

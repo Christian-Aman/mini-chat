@@ -1,8 +1,8 @@
-import * as express from "express";
-import * as socketIo from "socket.io";
-import { CONNECTED, DISCONNECTED, MESSAGE } from "./constants";
-import { ChatMessage } from "./types";
-import { createServer, Server } from "http";
+import * as express from 'express';
+import * as socketIo from 'socket.io';
+import { CONNECTED, DISCONNECTED, MESSAGE } from './constants';
+import { ChatMessage } from './types';
+import { createServer, Server } from 'http';
 
 export class ChatServer {
   private static readonly PORT: number;
@@ -28,10 +28,17 @@ export class ChatServer {
       console.log(`Server running on port ${this.port}`);
     });
 
-    this.io.on("connection", (socket: any) => {
-      console.log("a user connected");
-      socket.on("disconnect", () => {
-        console.log("User disconnected");
+    this.io.on('connection', (socket: any) => {
+      console.log('a user connected');
+      socket.on('disconnect', () => {
+        console.log('User disconnected');
+      });
+
+      socket.on('action', action => {
+        if (action.type === 'SERVER_CONNECT') {
+          console.log(action.type, action.data);
+          socket.emit('action', { type: 'UPDATE_CONNECTION_STATUS', data: true });
+        }
       });
     });
   }

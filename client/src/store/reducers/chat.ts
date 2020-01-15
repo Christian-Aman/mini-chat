@@ -1,18 +1,12 @@
 import { ADD_MESSAGE, UPDATE_CONNECTION_STATUS } from '../actions/types';
 import MessageInterface from '../../Models/MessageInterface';
-import StateInterface from '../../Models/StateInterface';
 
-const initalState: StateInterface = {
-  connected: false,
-  messages: [],
-};
+const initalState: MessageInterface[] = [];
 
-const chatReducer = (state: StateInterface = initalState, { type, payload }: { type: string; payload?: MessageInterface }): StateInterface => {
+const chatReducer = (state: MessageInterface[] = initalState, { type, data }: { type: string; data: MessageInterface }): MessageInterface[] => {
   switch (type) {
     case ADD_MESSAGE:
-      return { ...state, messages: payload ? [...state.messages, payload] : [...state.messages] };
-    case UPDATE_CONNECTION_STATUS:
-      return { ...state, connected: !state.connected };
+      return [...state, data];
     default:
       return state;
   }

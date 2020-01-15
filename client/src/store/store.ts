@@ -1,8 +1,16 @@
-import { createStore, applyMiddleware, compose } from 'redux';
+import { createStore, applyMiddleware, compose, combineReducers } from 'redux';
+import createSocketIoMiddleware from 'redux-socket.io';
+import io from 'socket.io-client';
 import thunk from 'redux-thunk';
+import rootReducer from './reducers';
 
-import chatReducer from './reducers/chat';
+const socket = io('localhost:5000');
 
-const store = createStore(chatReducer, compose(applyMiddleware(thunk)));
+const socketIoMiddleware = createSocketIoMiddleware(socket, 'SERVER_');
+
+const store = createStore(
+  rootReducer,
+  compose(applyMiddleware(thunk, socketIoMiddleware)),
+);
 
 export default store;

@@ -1,15 +1,16 @@
-import { ADD_MESSAGE, UPDATE_CONNECTION_STATUS } from './types';
+import { ADD_MESSAGE, SERVER_ADD_MESSAGE } from './types';
 import MessageInterface from '../../Models/MessageInterface';
+
+export const addMessageSocket = (message: MessageInterface) => {
+  return {
+    type: SERVER_ADD_MESSAGE,
+    data: message,
+  };
+};
 
 export const addMessage = (message: MessageInterface) => {
   return {
     type: ADD_MESSAGE,
-    payload: message,
-  };
-};
-
-export const updateConnection = () => {
-  return {
-    type: UPDATE_CONNECTION_STATUS,
+    data: message,
   };
 };
