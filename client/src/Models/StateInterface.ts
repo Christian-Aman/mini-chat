@@ -1,6 +1,7 @@
 import MessageInterface from './MessageInterface';
+import SystemStateInterface from './SystemStateInterface';
 
 export default interface StateInterface {
-  connected: boolean;
+  system: SystemStateInterface;
   messages: MessageInterface[];
 }

@@ -1,6 +1,11 @@
 import * as express from 'express';
 import * as socketIo from 'socket.io';
-import { CONNECTED, DISCONNECTED, MESSAGE } from './constants';
+import {
+  SERVER_ADD_MESSAGE,
+  SERVER_CONNECT,
+  ADD_MESSAGE,
+  UPDATE_CONNECTION_STATUS,
+} from './constants';
 import { ChatMessage } from './types';
 import { createServer, Server } from 'http';
 
@@ -34,10 +39,13 @@ export class ChatServer {
         console.log('User disconnected');
       });
 
-      socket.on('action', action => {
-        if (action.type === 'SERVER_CONNECT') {
-          console.log(action.type, action.data);
-          socket.emit('action', { type: 'UPDATE_CONNECTION_STATUS', data: true });
+      socket.on('action', ({ type, data }: { type: string; data: any }) => {
+        if (type === SERVER_CONNECT) {
+          console.log(type, data);
+          socket.emit('action', {
+            type: UPDATE_CONNECTION_STATUS,
+            data: { connected: true, username: data },
+          });
         }
       });
     });

@@ -7,8 +7,6 @@ interface Props {
   updateSocketConnection: (name: string) => void;
 }
 
-let socket;
-
 const Join: React.FC<Props> = ({ updateSocketConnection }) => {
   const clickHandler = (): void => {
     updateSocketConnection('Chrille');
