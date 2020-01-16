@@ -12,18 +12,27 @@ import {
 } from 'sancho';
 import StateInterface from '../Models/StateInterface';
 import MessageInterface from '../Models/MessageInterface';
+import SystemMessageInterface from '../Models/SystemMessageInterface';
 import { addMessageSocket } from '../store/actions/chat';
 import moment from 'moment/moment';
 
 interface Props {
   username: string;
   messages: MessageInterface[];
+  systemMessages: SystemMessageInterface[];
   addMessageSocket: (message: MessageInterface) => void;
 }
 
-const Chat: React.FC<Props> = ({ username, messages, addMessageSocket }) => {
+const Chat: React.FC<Props> = ({
+  username,
+  messages,
+  systemMessages,
+  addMessageSocket,
+}) => {
   const [message, setMessage] = useState({ sender: username, message: '' });
   const scrollViewEnd = useRef<HTMLDivElement>(null);
+
+  let combinedMessages: any[] = [];
 
   const scrollDown = () => {
     const scrollView = scrollViewEnd.current;
@@ -35,6 +44,10 @@ const Chat: React.FC<Props> = ({ username, messages, addMessageSocket }) => {
 
   useEffect(() => {
     scrollDown();
+    combinedMessages = [...messages, ...systemMessages];
+    // .sort(
+    //   (a, b) => Number(a.time) - Number(b.time),
+    // );
   });
 
   const submitMessage = (event: any) => {
@@ -49,7 +62,7 @@ const Chat: React.FC<Props> = ({ username, messages, addMessageSocket }) => {
       <br />
       <List>
         <ScrollView overflowY style={{ height: '300px' }}>
-          {messages.map((message, index) => {
+          {combinedMessages.map((message, index) => {
             return (
               <ListItem
                 key={index}
@@ -82,6 +95,7 @@ const Chat: React.FC<Props> = ({ username, messages, addMessageSocket }) => {
 const mapStateToProps = (state: StateInterface) => ({
   username: state.system.username,
   messages: state.messages,
+  systemMessages: state.system.systemMessages,
 });
 
 export default connect(mapStateToProps, { addMessageSocket })(Chat);

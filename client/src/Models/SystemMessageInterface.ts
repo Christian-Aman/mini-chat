@@ -3,4 +3,5 @@ export default interface SystemMessageInterface {
   id?: string;
   username?: string;
   message: string;
+  time: string;
 }

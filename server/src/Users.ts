@@ -1,7 +1,7 @@
 import UserInterface from './UserInterface';
 
 export class Users {
-  private users: UserInterface[];
+  private users: UserInterface[] = [];
 
   private doesUsernameExist(username: string): boolean {
     const result = this.users.some(user => user.username === username);
@@ -20,6 +20,7 @@ export class Users {
         id,
         username,
         message: 'Username allready taken',
+        time: Date.now(),
       };
     }
     this.users.push({ id, username });
@@ -28,6 +29,12 @@ export class Users {
       id,
       username,
       message: `Welcome ${username}!`,
+      time: Date.now(),
     };
+  }
+
+  public removeUser(id: string) {
+    console.log(this.users);
+    this.users = this.users.filter(user => user.id !== id);
   }
 }

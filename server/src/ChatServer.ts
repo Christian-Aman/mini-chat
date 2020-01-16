@@ -25,6 +25,7 @@ export class ChatServer {
     this._app = express();
     this.port = Number(process.env.PORT) || 5000;
     this.server = createServer(this._app);
+    this.userList = new Users();
     this.initSocket();
     this.listen();
   }
@@ -44,6 +45,7 @@ export class ChatServer {
         socket.broadcast.emit('action', {
           type: USER_DISCONNECTED_EXIT,
         });
+        this.userList.removeUser(socket.id);
         console.log(`User disconnected: ${reason}`);
       });
 
