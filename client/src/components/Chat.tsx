@@ -32,7 +32,9 @@ const Chat: React.FC<Props> = ({
   const [message, setMessage] = useState({ sender: username, message: '' });
   const scrollViewEnd = useRef<HTMLDivElement>(null);
 
-  let combinedMessages: any[] = [];
+  let combinedMessages: any[] = [...messages, ...systemMessages].sort(
+    (a, b) => Number(a.time) - Number(b.time),
+  );
 
   const scrollDown = () => {
     const scrollView = scrollViewEnd.current;
@@ -43,12 +45,9 @@ const Chat: React.FC<Props> = ({
   };
 
   useEffect(() => {
+    setMessage({ ...message, message: '' });
     scrollDown();
-    combinedMessages = [...messages, ...systemMessages];
-    // .sort(
-    //   (a, b) => Number(a.time) - Number(b.time),
-    // );
-  });
+  }, [messages, systemMessages]);
 
   const submitMessage = (event: any) => {
     event.preventDefault();
@@ -67,9 +66,9 @@ const Chat: React.FC<Props> = ({
               <ListItem
                 key={index}
                 primary={message.message}
-                secondary={`${message.sender} ${moment(message.time).format(
-                  'hh:mm',
-                )}`}
+                secondary={`${
+                  message.sender ? message.sender : 'Admin'
+                } ${moment(message.time).format('hh:mm')}`}
                 interactive={false}
               />
             );

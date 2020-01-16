@@ -3,7 +3,7 @@ import UserInterface from './UserInterface';
 export class Users {
   private users: UserInterface[] = [];
 
-  private doesUsernameExist(username: string): boolean {
+  private isUsernameTaken(username: string): boolean {
     const result = this.users.some(user => user.username === username);
     return result;
   }
@@ -14,9 +14,10 @@ export class Users {
   }
 
   public createUser(id: string, username: string) {
-    if (this.doesUsernameExist(username)) {
+    if (this.isUsernameTaken(username)) {
       return {
         success: false,
+        sender: 'Server',
         id,
         username,
         message: 'Username allready taken',
@@ -26,6 +27,7 @@ export class Users {
     this.users.push({ id, username });
     return {
       success: true,
+      sender: 'Server',
       id,
       username,
       message: `Welcome ${username}!`,

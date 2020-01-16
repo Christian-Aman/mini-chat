@@ -5,7 +5,7 @@ import {
   SERVER_CONNECT,
   ADD_MESSAGE,
   UPDATE_CONNECTION_STATUS,
-  USER_DISCONNECTED_EXIT,
+  USER_DISCONNECTED_QUIT,
   USER_DISCONNECTED_TIMEOUT,
 } from './constants';
 import { ChatMessageInterface } from './ChatMessageInterface';
@@ -43,7 +43,7 @@ export class ChatServer {
       console.log(`a user connected: ${socket.id}`);
       socket.on('disconnect', reason => {
         socket.broadcast.emit('action', {
-          type: USER_DISCONNECTED_EXIT,
+          type: USER_DISCONNECTED_QUIT,
         });
         this.userList.removeUser(socket.id);
         console.log(`User disconnected: ${reason}`);
