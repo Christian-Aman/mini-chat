@@ -63,12 +63,12 @@ const Chat: React.FC<Props> = ({
           {combinedMessages.map((message, index) => {
             return (
               <Layer
+                key={index}
                 elevation='sm'
                 style={{
                   margin: '10px',
                 }}>
                 <ListItem
-                  key={index}
                   primary={message.sender}
                   secondary={moment(message.time).format('hh:mm')}
                   interactive={false}

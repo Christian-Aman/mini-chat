@@ -1,4 +1,6 @@
+import { generateServerMessage } from './utils';
 import UserInterface from './UserInterface';
+import ServerMessageInterface from './ServerMessageInterface';
 
 export class Users {
   private users: UserInterface[] = [];
@@ -13,30 +15,31 @@ export class Users {
     return result;
   }
 
-  public createUser(id: string, username: string) {
+  public createUser(id: string, username: string): ServerMessageInterface {
     if (this.isUsernameTaken(username)) {
-      return {
-        success: false,
-        sender: 'Server',
+      return generateServerMessage(
+        false,
         id,
+        'Username allready taken',
         username,
-        message: 'Username allready taken',
-        time: Date.now(),
-      };
+      );
     }
-    this.users.push({ id, username });
-    return {
-      success: true,
-      sender: 'Server',
-      id,
-      username,
-      message: `Welcome ${username}!`,
-      time: Date.now(),
-    };
+    this.users.push({ id, username, lastActive: Date.now() });
+    return generateServerMessage(true, id, `Welcome ${username}`, username);
+  }
+
+  public updateUserActivity(id: string): void {
+    this.users = this.users.map(user =>
+      user.id === id ? { ...user, lastActive: Date.now() } : user,
+    );
+  }
+
+  public checkInactivity(time: number): UserInterface[] {
+    const timeout = Date.now() - time;
+    return this.users.filter(user => user.lastActive < timeout);
   }
 
   public removeUser(id: string) {
-    console.log(this.users);
     this.users = this.users.filter(user => user.id !== id);
   }
 }
