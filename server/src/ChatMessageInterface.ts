@@ -1,4 +1,4 @@
-export interface ChatMessage {
+export interface ChatMessageInterface {
   sender: string;
   message: string;
   time: string;

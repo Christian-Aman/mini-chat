@@ -8,8 +8,10 @@ import {
   USER_DISCONNECTED_EXIT,
   USER_DISCONNECTED_TIMEOUT,
 } from './constants';
-import { ChatMessage } from './types';
+import { ChatMessageInterface } from './ChatMessageInterface';
 import { createServer, Server } from 'http';
+import { Users } from './Users';
+import UserInterface from './UserInterface';
 
 export class ChatServer {
   private static readonly PORT: number;
@@ -17,6 +19,7 @@ export class ChatServer {
   private server: Server;
   private io: SocketIO.Server;
   private port: number;
+  private userList: Users;
 
   constructor() {
     this._app = express();
@@ -36,22 +39,25 @@ export class ChatServer {
     });
 
     this.io.on('connection', (socket: any) => {
-      console.log('a user connected');
-      socket.on('disconnect', () => {
+      console.log(`a user connected: ${socket.id}`);
+      socket.on('disconnect', reason => {
         socket.broadcast.emit('action', {
           type: USER_DISCONNECTED_EXIT,
         });
-        console.log('User disconnected');
+        console.log(`User disconnected: ${reason}`);
       });
 
       socket.on('action', ({ type, data }: { type: string; data: any }) => {
         switch (type) {
           case SERVER_CONNECT:
             console.log(type, data);
+            const result = this.userList.createUser(socket.id, data);
+
             socket.emit('action', {
               type: UPDATE_CONNECTION_STATUS,
-              data: { connected: true, username: data },
+              data: result,
             });
+
             break;
           case SERVER_ADD_MESSAGE:
             console.log(type, data);
