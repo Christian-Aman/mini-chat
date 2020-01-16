@@ -2,6 +2,7 @@ import {
   UPDATE_CONNECTION_STATUS,
   CLEAR_SYSTEM_MESSAGES,
   USER_DISCONNECTED_TIMEOUT,
+  USER_FORCE_DISCONNECTED,
 } from '../actions/types';
 import SystemStateInterface from '../../Models/SystemStateInterface';
 import SystemMessageInterface from '../../Models/SystemMessageInterface';
@@ -35,6 +36,11 @@ const systemReducer = (
       return {
         ...state,
         systemMessages: [...state.systemMessages, data],
+      };
+    case USER_FORCE_DISCONNECTED:
+      return {
+        ...initalState,
+        systemMessages: [data],
       };
     default:
       return state;

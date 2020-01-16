@@ -59,7 +59,6 @@ export class ChatServer {
           // console.log(inactiveUsers);
           inactiveUsers.forEach(user => {
             this.userList.removeUser(user.id);
-            socket.leave(this.chatRoom);
             console.log(`${user.username} was disconnected due to inactivity`);
             socket.emit('action', {
               type: USER_FORCE_DISCONNECTED,
@@ -70,6 +69,7 @@ export class ChatServer {
               ),
             });
 
+            socket.leave(this.chatRoom);
             this.io.to(this.chatRoom).emit('action', {
               type: USER_DISCONNECTED_TIMEOUT,
               data: generateServerMessage(
