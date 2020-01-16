@@ -1,15 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
-import {
-  Input,
-  InputGroup,
-  Button,
-  List,
-  ListItem,
-  ScrollView,
-  ScrollViewProps,
-  ScrollViewHandles,
-} from 'sancho';
+import { Input, InputGroup, Button, List, ListItem, ScrollView } from 'sancho';
 import StateInterface from '../Models/StateInterface';
 import MessageInterface from '../Models/MessageInterface';
 import SystemMessageInterface from '../Models/SystemMessageInterface';
@@ -60,17 +51,19 @@ const Chat: React.FC<Props> = ({
       <div>{username}</div>
       <br />
       <List>
-        <ScrollView overflowY style={{ height: '300px' }}>
+        <ScrollView overflowY style={{ height: '300px', width: '100%' }}>
           {combinedMessages.map((message, index) => {
             return (
               <ListItem
                 key={index}
-                primary={message.message}
-                secondary={`${
-                  message.sender ? message.sender : 'Admin'
-                } ${moment(message.time).format('hh:mm')}`}
+                primary={message.sender}
+                secondary={moment(message.time).format('hh:mm')}
                 interactive={false}
-              />
+                style={{
+                  textAlign: message.sender === username ? 'right' : 'left',
+                }}>
+                {message.message}
+              </ListItem>
             );
           })}
           <div ref={scrollViewEnd}></div>

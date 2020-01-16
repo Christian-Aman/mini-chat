@@ -23,7 +23,7 @@ const systemReducer = (
         ...state,
         connected: data.success === undefined ? state.connected : data.success,
         username: data.username === undefined ? state.username : data.username,
-        systemMessages: [...state.systemMessages, data],
+        systemMessages: [data],
       };
     case CLEAR_SYSTEM_MESSAGES:
       return {
