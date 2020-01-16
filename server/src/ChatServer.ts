@@ -5,6 +5,8 @@ import {
   SERVER_CONNECT,
   ADD_MESSAGE,
   UPDATE_CONNECTION_STATUS,
+  USER_DISCONNECTED_EXIT,
+  USER_DISCONNECTED_TIMEOUT,
 } from './constants';
 import { ChatMessage } from './types';
 import { createServer, Server } from 'http';
@@ -36,6 +38,9 @@ export class ChatServer {
     this.io.on('connection', (socket: any) => {
       console.log('a user connected');
       socket.on('disconnect', () => {
+        socket.broadcast.emit('action', {
+          type: USER_DISCONNECTED_EXIT,
+        });
         console.log('User disconnected');
       });
 

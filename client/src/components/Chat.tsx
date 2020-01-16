@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
-import { Input, InputGroup, Button, List, ListItem, ScrollView } from 'sancho';
+import {
+  Input,
+  InputGroup,
+  Button,
+  List,
+  ListItem,
+  ScrollView,
+  ScrollViewProps,
+  ScrollViewHandles,
+} from 'sancho';
 import StateInterface from '../Models/StateInterface';
 import MessageInterface from '../Models/MessageInterface';
 import { addMessageSocket } from '../store/actions/chat';
@@ -14,6 +23,19 @@ interface Props {
 
 const Chat: React.FC<Props> = ({ username, messages, addMessageSocket }) => {
   const [message, setMessage] = useState({ sender: username, message: '' });
+  const scrollViewEnd = useRef<HTMLDivElement>(null);
+
+  const scrollDown = () => {
+    const scrollView = scrollViewEnd.current;
+
+    if (scrollView) {
+      scrollView.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  useEffect(() => {
+    scrollDown();
+  });
 
   const submitMessage = (event: any) => {
     event.preventDefault();
@@ -39,6 +61,7 @@ const Chat: React.FC<Props> = ({ username, messages, addMessageSocket }) => {
               />
             );
           })}
+          <div ref={scrollViewEnd}></div>
         </ScrollView>
       </List>
       <form onSubmit={event => submitMessage(event)}>
