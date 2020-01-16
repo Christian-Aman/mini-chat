@@ -16,6 +16,7 @@ import { addMessageSocket } from '../store/actions/chat';
 import moment from 'moment/moment';
 
 interface Props {
+  id: string;
   username: string;
   messages: MessageInterface[];
   systemMessages: SystemMessageInterface[];
@@ -23,12 +24,13 @@ interface Props {
 }
 
 const Chat: React.FC<Props> = ({
+  id,
   username,
   messages,
   systemMessages,
   addMessageSocket,
 }) => {
-  const [message, setMessage] = useState({ sender: username, message: '' });
+  const [message, setMessage] = useState({ id, sender: username, message: '' });
   const scrollViewEnd = useRef<HTMLDivElement>(null);
 
   let combinedMessages: any[] = [...messages, ...systemMessages].sort(
@@ -99,6 +101,7 @@ const Chat: React.FC<Props> = ({
 };
 
 const mapStateToProps = (state: StateInterface) => ({
+  id: state.system.id,
   username: state.system.username,
   messages: state.messages,
   systemMessages: state.system.systemMessages,

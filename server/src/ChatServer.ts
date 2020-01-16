@@ -33,7 +33,7 @@ export class ChatServer {
     this.server = createServer(this._app);
     this.userList = new Users();
     this.chatRoom = 'chatRoom';
-    this.idleTimeout = 5000;
+    this.idleTimeout = 10000;
     this.initSocket();
     this.listen();
     this.activityTimer();
@@ -115,6 +115,7 @@ export class ChatServer {
                 type: ADD_MESSAGE,
                 data: { ...data, time: Date.now() },
               });
+              this.userList.updateUserActivity(data.id);
               break;
             }
             socket.emit(

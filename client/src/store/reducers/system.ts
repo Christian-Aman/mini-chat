@@ -23,6 +23,7 @@ const systemReducer = (
       console.log(type, data);
       return {
         ...state,
+        id: data.id === undefined ? state.id : data.id,
         connected: data.success === undefined ? state.connected : data.success,
         username: data.username === undefined ? state.username : data.username,
         systemMessages: [data],
