@@ -3,7 +3,7 @@ import SystemStateInterface from '../../Models/SystemStateInterface';
 
 const initalState: SystemStateInterface = {
   connected: false,
-  username: undefined,
+  username: '',
 };
 
 const systemReducer = (

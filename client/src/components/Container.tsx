@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import StateInterface from '../Models/StateInterface';
+import { Container } from 'sancho';
 
 import Join from './Join';
 import Chat from './Chat';
@@ -10,7 +11,7 @@ interface Props {
 }
 
 const Contariner: React.FC<Props> = ({ isConnected }) => {
-  return <div>{isConnected ? <Chat /> : <Join />}</div>;
+  return <Container>{isConnected ? <Chat /> : <Join />}</Container>;
 };
 
 const mapStateToProps = (state: StateInterface) => ({

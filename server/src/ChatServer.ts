@@ -40,12 +40,22 @@ export class ChatServer {
       });
 
       socket.on('action', ({ type, data }: { type: string; data: any }) => {
-        if (type === SERVER_CONNECT) {
-          console.log(type, data);
-          socket.emit('action', {
-            type: UPDATE_CONNECTION_STATUS,
-            data: { connected: true, username: data },
-          });
+        switch (type) {
+          case SERVER_CONNECT:
+            console.log(type, data);
+            socket.emit('action', {
+              type: UPDATE_CONNECTION_STATUS,
+              data: { connected: true, username: data },
+            });
+            break;
+          case SERVER_ADD_MESSAGE:
+            console.log(type, data);
+            this.io.emit('action', {
+              type: ADD_MESSAGE,
+              data: { ...data, time: Date.now() },
+            });
+          default:
+            break;
         }
       });
     });

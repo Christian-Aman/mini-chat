@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
+import { Button, InputGroup, Input } from 'sancho';
 
 import { updateSocketConnection } from '../store/actions/system';
 
@@ -8,14 +9,27 @@ interface Props {
 }
 
 const Join: React.FC<Props> = ({ updateSocketConnection }) => {
-  const clickHandler = (): void => {
-    updateSocketConnection('Chrille');
+  const [username, setUsername] = useState('');
+
+  const submit = (event: any): void => {
+    event.preventDefault();
+    updateSocketConnection(username);
   };
 
   return (
     <div>
-      Join!
-      <input type='button' value='clickMEEE' onClick={clickHandler} />
+      <form onSubmit={event => submit(event)}>
+        <InputGroup label='Username'>
+          <Input
+            placeholder='Enter your username'
+            value={username}
+            onChange={event => setUsername(event.target.value)}
+          />
+        </InputGroup>
+        <Button variant='outline' onClick={submit}>
+          Join
+        </Button>
+      </form>
     </div>
   );
 };
