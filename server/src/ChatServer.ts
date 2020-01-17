@@ -79,7 +79,7 @@ export class ChatServer {
                 'You were disconnected due to inactivity',
               ),
             });
-            socket.leave(this.chatRoom);
+            this.io.sockets.connected[user.id].leave(this.chatRoom);
             this.io.to(this.chatRoom).emit('action', {
               type: ADMIN_MESSAGE,
               data: generateServerMessage(
@@ -125,15 +125,16 @@ export class ChatServer {
             console.log(type, data);
             const result = this.userList.createUser(socket.id, data);
 
-            socket.join(this.chatRoom, () => {
-              socket.emit('action', {
-                type: CONNECT_USER,
-                data: result,
-              });
+            socket.emit('action', {
+              type: CONNECT_USER,
+              data: result,
             });
+            if (result.success) {
+              socket.join(this.chatRoom);
+            }
 
             if (result.success) {
-              this.io.emit('action', {
+              this.io.to(this.chatRoom).emit('action', {
                 type: ADMIN_MESSAGE,
                 data: generateServerMessage(
                   true,

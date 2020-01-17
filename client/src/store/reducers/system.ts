@@ -22,7 +22,6 @@ const systemReducer = (
 ): SystemStateInterface => {
   switch (type) {
     case CONNECT_USER:
-      console.log(type, data);
       return {
         ...state,
         id: data.id === undefined ? state.id : data.id,

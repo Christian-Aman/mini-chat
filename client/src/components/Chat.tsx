@@ -113,6 +113,9 @@ const Chat: React.FC<Props> = ({
             }}
           />
         </InputGroup>
+        <Button variant='outline' onClick={submitMessage}>
+          Send
+        </Button>
       </form>
     </div>
   );
