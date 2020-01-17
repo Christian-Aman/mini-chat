@@ -38,7 +38,7 @@ export class ChatServer {
     this.server = createServer(this._app);
     this.userList = new Users();
     this.chatRoom = 'chatRoom';
-    this.idleTimeout = 30000;
+    this.idleTimeout = 10000;
     this.initSocket();
     this.listen();
     this.activityTimer();
@@ -69,9 +69,9 @@ export class ChatServer {
         let inactiveUsers = this.userList.checkInactivity(this.idleTimeout);
         if (inactiveUsers) {
           inactiveUsers.forEach(user => {
-            this.userList.removeUser(user.id);
             console.log(`${user.username} was disconnected due to inactivity`);
-            socket.emit('action', {
+            this.userList.removeUser(user.id);
+            this.io.to(`${user.id}`).emit('action', {
               type: DISCONNECT_USER,
               data: generateServerMessage(
                 true,
@@ -79,7 +79,6 @@ export class ChatServer {
                 'You were disconnected due to inactivity',
               ),
             });
-
             socket.leave(this.chatRoom);
             this.io.to(this.chatRoom).emit('action', {
               type: ADMIN_MESSAGE,
