@@ -20,6 +20,7 @@ import { Users } from './Users';
 import UserInterface from './UserInterface';
 import ServerMessageInterface from './ServerMessageInterface';
 import { generateServerMessage } from './utils';
+import { isRegExp } from 'util';
 
 export class ChatServer {
   private static readonly PORT: number;
@@ -37,14 +38,17 @@ export class ChatServer {
     this.server = createServer(this._app);
     this.userList = new Users();
     this.chatRoom = 'chatRoom';
-    this.idleTimeout = 300000;
+    this.idleTimeout = 30000;
     this.initSocket();
     this.listen();
     this.activityTimer();
   }
 
   private initSocket(): void {
-    this.io = socketIo(this.server);
+    this.io = socketIo(this.server, {
+      pingTimeout: 15000,
+      pingInterval: 30000,
+    });
   }
 
   private activityTimer(): void {}
@@ -97,6 +101,23 @@ export class ChatServer {
             'hh:mm:ss',
           )}`,
         );
+        if (reason === 'transport close') {
+          if (this.userList.getUser(socket.id)) {
+            socket.leave(this.chatRoom);
+            this.io.to(this.chatRoom).emit('action', {
+              type: ADMIN_MESSAGE,
+              data: generateServerMessage(
+                true,
+                socket.id,
+                `${
+                  this.userList.getUser(socket.id).username
+                } has left the chat.`,
+                socket.username,
+              ),
+            });
+            this.userList.removeUser(socket.id);
+          }
+        }
       });
 
       socket.on('action', ({ type, data }: { type: string; data: any }) => {
