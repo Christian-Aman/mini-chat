@@ -37,7 +37,7 @@ const Chat: React.FC<Props> = ({
   reconnected,
   reconnect,
 }) => {
-  const [message, setMessage] = useState({ id, sender: username, message: '' });
+  const [message, setMessage] = useState('');
   const scrollViewEnd = useRef<HTMLDivElement>(null);
 
   let combinedMessages: any[] = [...messages, ...systemMessages].sort(
@@ -53,7 +53,7 @@ const Chat: React.FC<Props> = ({
   };
 
   useEffect(() => {
-    setMessage({ ...message, message: '' });
+    setMessage('');
     scrollDown();
     if (reconnected) {
       reconnect(id);
@@ -62,7 +62,7 @@ const Chat: React.FC<Props> = ({
 
   const submitMessage = (event: any) => {
     event.preventDefault();
-    addMessageSocket(message);
+    addMessageSocket({ id, sender: username, message });
   };
 
   return (
@@ -107,9 +107,9 @@ const Chat: React.FC<Props> = ({
         <InputGroup label='Chat message'>
           <Input
             placeholder='Enter your message'
-            value={message.message}
+            value={message}
             onChange={event => {
-              setMessage({ ...message, message: event.target.value });
+              setMessage(event.target.value);
             }}
           />
         </InputGroup>
