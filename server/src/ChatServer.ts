@@ -1,14 +1,18 @@
 import * as express from 'express';
 import * as socketIo from 'socket.io';
+import * as moment from 'moment/moment';
 import {
   SERVER_ADD_MESSAGE,
   SERVER_CONNECT,
+  SERVER_DISCONNECT,
+  SERVER_RECONNECT,
+  CONNECT_USER,
+  DISCONNECT_USER,
+  RECONNECT_USER,
+  UPDATE_USER_ID,
+  ADMIN_MESSAGE,
   ADD_MESSAGE,
-  UPDATE_CONNECTION_STATUS,
-  USER_DISCONNECTED_QUIT,
-  USER_DISCONNECTED_TIMEOUT,
   ERROR_MESSAGE,
-  USER_FORCE_DISCONNECTED,
 } from './constants';
 import { ChatMessageInterface } from './ChatMessageInterface';
 import { createServer, Server } from 'http';
@@ -33,7 +37,7 @@ export class ChatServer {
     this.server = createServer(this._app);
     this.userList = new Users();
     this.chatRoom = 'chatRoom';
-    this.idleTimeout = 10000;
+    this.idleTimeout = 300000;
     this.initSocket();
     this.listen();
     this.activityTimer();
@@ -51,17 +55,20 @@ export class ChatServer {
     });
 
     this.io.on('connection', (socket: any) => {
-      console.log(`a user connected: ${socket.id}`);
+      console.log(
+        `a user connected: ${socket.id}, ${moment().format('hh:mm:ss')}`,
+      );
+
+      socket.emit('action', { type: RECONNECT_USER });
 
       setInterval(() => {
         let inactiveUsers = this.userList.checkInactivity(this.idleTimeout);
         if (inactiveUsers) {
-          // console.log(inactiveUsers);
           inactiveUsers.forEach(user => {
             this.userList.removeUser(user.id);
             console.log(`${user.username} was disconnected due to inactivity`);
             socket.emit('action', {
-              type: USER_FORCE_DISCONNECTED,
+              type: DISCONNECT_USER,
               data: generateServerMessage(
                 true,
                 socket.id,
@@ -71,7 +78,7 @@ export class ChatServer {
 
             socket.leave(this.chatRoom);
             this.io.to(this.chatRoom).emit('action', {
-              type: USER_DISCONNECTED_TIMEOUT,
+              type: ADMIN_MESSAGE,
               data: generateServerMessage(
                 true,
                 user.id,
@@ -85,11 +92,11 @@ export class ChatServer {
       }, 1000);
 
       socket.on('disconnect', reason => {
-        socket.broadcast.emit('action', {
-          type: USER_DISCONNECTED_QUIT,
-        });
-        this.userList.removeUser(socket.id);
-        console.log(`User disconnected: ${reason}`);
+        console.log(
+          `User disconnected: ${reason}, ${socket.id}, ${moment().format(
+            'hh:mm:ss',
+          )}`,
+        );
       });
 
       socket.on('action', ({ type, data }: { type: string; data: any }) => {
@@ -100,14 +107,55 @@ export class ChatServer {
 
             socket.join(this.chatRoom, () => {
               socket.emit('action', {
-                type: UPDATE_CONNECTION_STATUS,
+                type: CONNECT_USER,
                 data: result,
               });
             });
 
-            // this.io.emit('action')
-
+            if (result.success) {
+              this.io.emit('action', {
+                type: ADMIN_MESSAGE,
+                data: generateServerMessage(
+                  true,
+                  socket.id,
+                  `${result.username} has joined the chat.`,
+                ),
+              });
+            }
             break;
+
+          case SERVER_DISCONNECT:
+            this.userList.removeUser(data.id);
+            socket.leave(this.chatRoom, () => {
+              socket.emit('action', {
+                type: DISCONNECT_USER,
+                data: generateServerMessage(true, data, 'You left the chat'),
+              });
+
+              this.io.to(this.chatRoom).emit('action', {
+                type: ADMIN_MESSAGE,
+                data: generateServerMessage(
+                  true,
+                  data.id,
+                  `${data.username} left the chat.`,
+                ),
+              });
+            });
+            break;
+
+          case SERVER_RECONNECT:
+            this.userList.updateUserId(data, socket.id);
+            socket.join(this.chatRoom);
+            socket.emit('action', {
+              type: UPDATE_USER_ID,
+              data: generateServerMessage(
+                true,
+                socket.id,
+                'Reconnected and updated user id',
+              ),
+            });
+            break;
+
           case SERVER_ADD_MESSAGE:
             console.log(type, data);
             if (this.userList.getUser(socket.id)) {
@@ -118,14 +166,15 @@ export class ChatServer {
               this.userList.updateUserActivity(data.id);
               break;
             }
-            socket.emit(
-              'action',
-              generateServerMessage(
+            socket.emit('action', {
+              type: ERROR_MESSAGE,
+              data: generateServerMessage(
                 false,
                 socket.id,
                 'Please join the chat first!',
               ),
-            );
+            });
+            break;
           default:
             break;
         }

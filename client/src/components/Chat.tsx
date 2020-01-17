@@ -13,14 +13,18 @@ import StateInterface from '../Models/StateInterface';
 import MessageInterface from '../Models/MessageInterface';
 import SystemMessageInterface from '../Models/SystemMessageInterface';
 import { addMessageSocket } from '../store/actions/chat';
+import { disconnect, reconnect } from '../store/actions/system';
 import moment from 'moment/moment';
 
 interface Props {
   id: string;
   username: string;
+  reconnected: boolean;
   messages: MessageInterface[];
   systemMessages: SystemMessageInterface[];
   addMessageSocket: (message: MessageInterface) => void;
+  disconnect: (id: string) => void;
+  reconnect: (id: string) => void;
 }
 
 const Chat: React.FC<Props> = ({
@@ -29,6 +33,9 @@ const Chat: React.FC<Props> = ({
   messages,
   systemMessages,
   addMessageSocket,
+  disconnect,
+  reconnected,
+  reconnect,
 }) => {
   const [message, setMessage] = useState({ id, sender: username, message: '' });
   const scrollViewEnd = useRef<HTMLDivElement>(null);
@@ -48,7 +55,10 @@ const Chat: React.FC<Props> = ({
   useEffect(() => {
     setMessage({ ...message, message: '' });
     scrollDown();
-  }, [messages, systemMessages]);
+    if (reconnected) {
+      reconnect(id);
+    }
+  }, [messages, systemMessages, reconnected, id]);
 
   const submitMessage = (event: any) => {
     event.preventDefault();
@@ -58,7 +68,15 @@ const Chat: React.FC<Props> = ({
   return (
     <div>
       Chat!
-      <div>{username}</div>
+      <div>
+        {username}
+        <Button
+          onClick={() => {
+            disconnect(id);
+          }}>
+          Disconnect
+        </Button>
+      </div>
       <br />
       <List>
         <ScrollView overflowY style={{ height: '400px', width: '100%' }}>
@@ -103,8 +121,13 @@ const Chat: React.FC<Props> = ({
 const mapStateToProps = (state: StateInterface) => ({
   id: state.system.id,
   username: state.system.username,
+  reconnected: state.system.reconnected,
   messages: state.messages,
   systemMessages: state.system.systemMessages,
 });
 
-export default connect(mapStateToProps, { addMessageSocket })(Chat);
+export default connect(mapStateToProps, {
+  addMessageSocket,
+  disconnect,
+  reconnect,
+})(Chat);

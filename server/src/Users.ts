@@ -6,13 +6,11 @@ export class Users {
   private users: UserInterface[] = [];
 
   private isUsernameTaken(username: string): boolean {
-    const result = this.users.some(user => user.username === username);
-    return result;
+    return this.users.some(user => user.username === username);
   }
 
   public getUser(id: string): UserInterface {
-    const result = this.users.find(user => user.id === id);
-    return result;
+    return this.users.find(user => user.id === id);
   }
 
   public createUser(id: string, username: string): ServerMessageInterface {
@@ -39,7 +37,14 @@ export class Users {
     return this.users.filter(user => user.lastActive < timeout);
   }
 
-  public removeUser(id: string) {
+  public updateUserId(id: string, newId: string): UserInterface {
+    this.users = this.users.map(user =>
+      user.id === id ? { ...user, id: newId } : user,
+    );
+    return this.users.find(user => user.id === newId);
+  }
+
+  public removeUser(id: string): void {
     this.users = this.users.filter(user => user.id !== id);
   }
 }
