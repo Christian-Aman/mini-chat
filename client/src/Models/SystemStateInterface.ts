@@ -6,4 +6,5 @@ export default interface SystemStateInterface {
   reconnected: boolean;
   username: string;
   systemMessages: SystemMessageInterface[];
+  errorMessages: SystemMessageInterface[];
 }

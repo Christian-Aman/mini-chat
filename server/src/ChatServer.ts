@@ -14,16 +14,14 @@ import {
   ADD_MESSAGE,
   ERROR_MESSAGE,
 } from './constants';
-import { ChatMessageInterface } from './ChatMessageInterface';
+import { ChatMessageInterface } from './Models/ChatMessageInterface';
 import { createServer, Server } from 'http';
 import { Users } from './Users';
-import UserInterface from './UserInterface';
-import ServerMessageInterface from './ServerMessageInterface';
+import UserInterface from './Models/UserInterface';
+import ServerMessageInterface from './Models/ServerMessageInterface';
 import { generateServerMessage } from './utils';
-import { isRegExp } from 'util';
 
 export class ChatServer {
-  private static readonly PORT: number;
   private _app: express.Application;
   private server: Server;
   private io: SocketIO.Server;
@@ -32,13 +30,13 @@ export class ChatServer {
   private chatRoom: string;
   private idleTimeout: number;
 
-  constructor() {
+  constructor(idleTimeout: number) {
     this._app = express();
     this.port = Number(process.env.PORT) || 5000;
     this.server = createServer(this._app);
     this.userList = new Users();
     this.chatRoom = 'chatRoom';
-    this.idleTimeout = 10000;
+    this.idleTimeout = idleTimeout;
     this.initSocket();
     this.listen();
     this.activityTimer();
@@ -86,6 +84,7 @@ export class ChatServer {
                 true,
                 user.id,
                 `${user.username} was disconnected due to inactivity`,
+                'info',
                 user.username,
               ),
             });
@@ -146,7 +145,7 @@ export class ChatServer {
             break;
 
           case SERVER_DISCONNECT:
-            this.userList.removeUser(data.id);
+            this.userList.removeUser(data);
             socket.leave(this.chatRoom, () => {
               socket.emit('action', {
                 type: DISCONNECT_USER,

@@ -1,5 +1,5 @@
-import { ChatServer } from "./ChatServer";
+import { ChatServer } from './ChatServer';
 
-const app = new ChatServer().app;
+const app = new ChatServer(30000).app;
 
 export { app };

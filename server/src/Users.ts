@@ -1,6 +1,6 @@
 import { generateServerMessage } from './utils';
-import UserInterface from './UserInterface';
-import ServerMessageInterface from './ServerMessageInterface';
+import UserInterface from './Models/UserInterface';
+import ServerMessageInterface from './Models/ServerMessageInterface';
 
 export class Users {
   private users: UserInterface[] = [];
@@ -19,11 +19,18 @@ export class Users {
         false,
         id,
         'Username allready taken',
+        'danger',
         username,
       );
     }
     this.users.push({ id, username, lastActive: Date.now() });
-    return generateServerMessage(true, id, `Welcome ${username}`, username);
+    return generateServerMessage(
+      true,
+      id,
+      `Welcome ${username}`,
+      'success',
+      username,
+    );
   }
 
   public updateUserActivity(id: string): void {

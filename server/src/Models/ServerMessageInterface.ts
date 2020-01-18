@@ -4,5 +4,6 @@ export default interface SystemMessageInterface {
   sender: string;
   username?: string;
   message: string;
+  intent?: 'warning' | 'danger' | 'info' | 'success' | 'question' | undefined;
   time: number;
 }

@@ -1,20 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
-import {
-  Input,
-  InputGroup,
-  Button,
-  List,
-  ListItem,
-  ScrollView,
-  Layer,
-} from 'sancho';
+import { List, ListItem, ScrollView, Layer } from 'sancho';
+import moment from 'moment/moment';
+import InputForm from './InputForm';
 import StateInterface from '../Models/StateInterface';
 import MessageInterface from '../Models/MessageInterface';
 import SystemMessageInterface from '../Models/SystemMessageInterface';
 import { addMessageSocket } from '../store/actions/chat';
-import { disconnect, reconnect } from '../store/actions/system';
-import moment from 'moment/moment';
+import { reconnect, addError } from '../store/actions/system';
 
 interface Props {
   id: string;
@@ -23,8 +16,8 @@ interface Props {
   messages: MessageInterface[];
   systemMessages: SystemMessageInterface[];
   addMessageSocket: (message: MessageInterface) => void;
-  disconnect: (id: string) => void;
   reconnect: (id: string) => void;
+  addError: (imessage: string, intent: string) => void;
 }
 
 const Chat: React.FC<Props> = ({
@@ -33,11 +26,10 @@ const Chat: React.FC<Props> = ({
   messages,
   systemMessages,
   addMessageSocket,
-  disconnect,
   reconnected,
   reconnect,
+  addError,
 }) => {
-  const [message, setMessage] = useState('');
   const scrollViewEnd = useRef<HTMLDivElement>(null);
 
   let combinedMessages: any[] = [...messages, ...systemMessages].sort(
@@ -53,33 +45,34 @@ const Chat: React.FC<Props> = ({
   };
 
   useEffect(() => {
-    setMessage('');
     scrollDown();
     if (reconnected) {
       reconnect(id);
     }
-  }, [messages, systemMessages, reconnected, id]);
+  });
 
-  const submitMessage = (event: any) => {
-    event.preventDefault();
-    addMessageSocket({ id, sender: username, message });
+  const submitMessage = (message: string) => {
+    switch (message) {
+      case '':
+        addError('Please enter a message', 'warning');
+        break;
+
+      default:
+        addMessageSocket({ id, sender: username, message });
+        break;
+    }
   };
 
   return (
     <div>
-      Chat!
-      <div>
-        {username}
-        <Button
-          onClick={() => {
-            disconnect(id);
-          }}>
-          Disconnect
-        </Button>
-      </div>
-      <br />
       <List>
-        <ScrollView overflowY style={{ height: '400px', width: '100%' }}>
+        <ScrollView
+          overflowY
+          style={{
+            height: '400px',
+            width: '100%',
+            borderBottom: '1px solid rgba(0,0,0, 0.1)',
+          }}>
           {combinedMessages.map((message, index) => {
             return (
               <Layer
@@ -103,20 +96,14 @@ const Chat: React.FC<Props> = ({
           <div ref={scrollViewEnd}></div>
         </ScrollView>
       </List>
-      <form onSubmit={event => submitMessage(event)}>
-        <InputGroup label='Chat message'>
-          <Input
-            placeholder='Enter your message'
-            value={message}
-            onChange={event => {
-              setMessage(event.target.value);
-            }}
-          />
-        </InputGroup>
-        <Button variant='outline' onClick={submitMessage}>
-          Send
-        </Button>
-      </form>
+      <InputForm
+        buttonText='Send'
+        inputLabel='Chat message'
+        inputPlaceholder='Enter your message'
+        callbackFunction={message => {
+          submitMessage(message);
+        }}
+      />
     </div>
   );
 };
@@ -131,6 +118,6 @@ const mapStateToProps = (state: StateInterface) => ({
 
 export default connect(mapStateToProps, {
   addMessageSocket,
-  disconnect,
   reconnect,
+  addError,
 })(Chat);

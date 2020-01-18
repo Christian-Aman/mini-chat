@@ -4,6 +4,8 @@ import {
   DISCONNECT_USER,
   RECONNECT_USER,
   UPDATE_USER_ID,
+  CONNECTION_ERROR,
+  ERROR_MESSAGE,
 } from '../actions/types';
 import SystemStateInterface from '../../Models/SystemStateInterface';
 import SystemMessageInterface from '../../Models/SystemMessageInterface';
@@ -14,6 +16,7 @@ const initalState: SystemStateInterface = {
   reconnected: false,
   username: '',
   systemMessages: [],
+  errorMessages: [],
 };
 
 const systemReducer = (
@@ -27,7 +30,8 @@ const systemReducer = (
         id: data.id === undefined ? state.id : data.id,
         connected: data.success === undefined ? state.connected : data.success,
         username: data.username === undefined ? state.username : data.username,
-        systemMessages: [data],
+        systemMessages: [],
+        errorMessages: [data],
       };
     case ADMIN_MESSAGE:
       return {
@@ -37,7 +41,7 @@ const systemReducer = (
     case DISCONNECT_USER:
       return {
         ...initalState,
-        systemMessages: [data],
+        errorMessages: [...state.errorMessages, data],
       };
     case RECONNECT_USER:
       return { ...state, reconnected: state.connected ? true : false };
@@ -46,6 +50,16 @@ const systemReducer = (
         ...state,
         reconnected: false,
         id: data.id === undefined ? state.id : data.id,
+      };
+    case CONNECTION_ERROR:
+      return {
+        ...initalState,
+        errorMessages: [...state.errorMessages, data],
+      };
+    case ERROR_MESSAGE:
+      return {
+        ...state,
+        errorMessages: [data],
       };
     default:
       return state;

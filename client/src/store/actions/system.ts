@@ -1,4 +1,9 @@
-import { SERVER_CONNECT, SERVER_DISCONNECT, SERVER_RECONNECT } from './types';
+import {
+  SERVER_CONNECT,
+  SERVER_DISCONNECT,
+  SERVER_RECONNECT,
+  ERROR_MESSAGE,
+} from './types';
 
 export const updateSocketConnection = (username: string) => {
   return {
@@ -18,5 +23,18 @@ export const reconnect = (id: string) => {
   return {
     type: SERVER_RECONNECT,
     data: id,
+  };
+};
+
+export const addError = (message: string, intent: string) => {
+  const time = Date.now();
+  return {
+    type: ERROR_MESSAGE,
+    data: {
+      sender: 'System',
+      message,
+      intent,
+      time,
+    },
   };
 };

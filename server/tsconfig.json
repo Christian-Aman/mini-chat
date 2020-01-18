@@ -7,7 +7,7 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "*": ["node_modules/", "src/ChatMessageInterface.ts/*"]
+      "*": ["node_modules/", "src/Models/ChatMessageInterface.ts/*"]
     }
   },
   "include": ["src/**/*"]

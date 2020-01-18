@@ -1,9 +1,10 @@
-import ServerMessageInterface from './ServerMessageInterface';
+import ServerMessageInterface from './Models/ServerMessageInterface';
 
 export const generateServerMessage = (
   success: boolean,
   id: string,
   message: string,
+  intent?: 'warning' | 'danger' | 'info' | 'success' | 'question' | undefined,
   username?: string,
 ): ServerMessageInterface => {
   return {
@@ -12,6 +13,7 @@ export const generateServerMessage = (
     id,
     username,
     message,
+    intent,
     time: Date.now(),
   };
 };
