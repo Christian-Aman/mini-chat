@@ -1,9 +1,8 @@
 import * as express from 'express';
 import { createServer, Server } from 'http';
 import * as socketIo from 'socket.io';
-import * as moment from 'moment/moment';
 import { Users } from './Users';
-import { generateServerMessage } from './utils';
+import { generateServerMessage, logger, ioLogger, createWriter } from './utils';
 import {
   SERVER_ADD_MESSAGE,
   SERVER_CONNECT,
@@ -26,6 +25,7 @@ export class ChatServer {
   private userList: Users;
   private chatRoom: string;
   private idleTimeout: number;
+  private writer: any;
 
   constructor(idleTimeout: number) {
     this._app = express();
@@ -34,6 +34,7 @@ export class ChatServer {
     this.userList = new Users();
     this.chatRoom = 'chatRoom';
     this.idleTimeout = idleTimeout;
+    this.writer = createWriter('log/events.log', { flags: 'a' });
     this.initSocket();
     this.listen();
     this.activityTimer();
@@ -51,7 +52,11 @@ export class ChatServer {
       let inactiveUsers = this.userList.checkInactivity(this.idleTimeout);
       if (inactiveUsers) {
         inactiveUsers.forEach(user => {
-          console.log(`${user.username} was disconnected due to inactivity`);
+          logger(
+            this.writer,
+            `User was disconnected due to inactivity`,
+            user.id,
+          );
           this.userList.removeUser(user.id);
           this._io.to(`${user.id}`).emit('action', {
             type: DISCONNECT_USER,
@@ -80,22 +85,16 @@ export class ChatServer {
 
   private listen(): void {
     this._server.listen(this.port, () => {
-      console.log(`Server running on port ${this.port}`);
+      logger(this.writer, `Server running on port ${this.port}`);
     });
 
     this._io.on('connection', (socket: any) => {
-      console.log(
-        `a user connected: ${socket.id}, ${moment().format('hh:mm:ss')}`,
-      );
-
+      logger(this.writer, 'A user connected', socket.id);
       socket.emit('action', { type: RECONNECT_USER });
 
       socket.on('disconnect', reason => {
-        console.log(
-          `User disconnected: ${reason}, ${socket.id}, ${moment().format(
-            'hh:mm:ss',
-          )}`,
-        );
+        logger(this.writer, `User disconnected: ${reason}`, socket.id);
+
         if (reason === 'transport close') {
           if (this.userList.getUser(socket.id)) {
             socket.leave(this.chatRoom);
@@ -118,8 +117,14 @@ export class ChatServer {
       socket.on('action', ({ type, data }: { type: string; data: any }) => {
         switch (type) {
           case SERVER_CONNECT:
-            console.log(type, data);
             const result = this.userList.createUser(socket.id, data);
+            logger(
+              this.writer,
+              result.success
+                ? 'User successfully joined'
+                : 'User failed to join',
+              socket.id,
+            );
 
             socket.emit('action', {
               type: CONNECT_USER,
@@ -143,6 +148,9 @@ export class ChatServer {
 
           case SERVER_DISCONNECT:
             this.userList.removeUser(data);
+
+            logger(this.writer, 'User left', socket.id);
+
             socket.leave(this.chatRoom, () => {
               socket.emit('action', {
                 type: DISCONNECT_USER,
@@ -162,6 +170,7 @@ export class ChatServer {
 
           case SERVER_RECONNECT:
             this.userList.updateUserId(data, socket.id);
+            logger(this.writer, 'User reconnected', socket.id);
             socket.join(this.chatRoom);
             socket.emit('action', {
               type: UPDATE_USER_ID,
@@ -174,7 +183,12 @@ export class ChatServer {
             break;
 
           case SERVER_ADD_MESSAGE:
-            console.log(type, data);
+            // console.log(type, data);
+            logger(
+              this.writer,
+              `New message: ${data.sender}: ${data.message}`,
+              socket.id,
+            );
             if (this.userList.getUser(socket.id)) {
               this._io.to(this.chatRoom).emit('action', {
                 type: ADD_MESSAGE,
@@ -183,12 +197,17 @@ export class ChatServer {
               this.userList.updateUserActivity(data.id);
               break;
             }
+            logger(
+              this.writer,
+              `User tried to send meddage without having joined`,
+              socket.id,
+            );
             socket.emit('action', {
               type: ERROR_MESSAGE,
               data: generateServerMessage(
                 false,
-                socket.id,
                 'Please join the chat first!',
+                socket.id,
               ),
             });
             break;
@@ -209,5 +228,15 @@ export class ChatServer {
 
   get io(): SocketIO.Server {
     return this._io;
+  }
+
+  public shutdown(): void {
+    logger(this.writer, 'Shutting down server');
+    this._io
+      .to(this.chatRoom)
+      .emit(
+        'action',
+        generateServerMessage(true, '1', 'Server is going offline'),
+      );
   }
 }

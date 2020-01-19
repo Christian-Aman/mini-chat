@@ -4,6 +4,7 @@
   "description": "",
   "main": "app.ts",
   "scripts": {
+    "start": "ts-node src/server.ts",
     "watch": "nodemon --exec ts-node src/server.ts",
     "test": "cross-env TS_NODE_FILES=true mocha --exit --require ts-node/register --colors test/**/*.ts",
     "test-cov": "nyc npm run test",
@@ -15,7 +16,8 @@
     "express": "^4.17.1",
     "express-graceful-exit": "^0.5.0",
     "moment": "^2.24.0",
-    "socket.io": "^2.3.0"
+    "socket.io": "^2.3.0",
+    "socket.io-logger": "0.0.2"
   },
   "devDependencies": {
     "@types/chai": "^4.2.7",

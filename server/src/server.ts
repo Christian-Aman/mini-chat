@@ -1,7 +1,7 @@
 import * as gracefulExit from 'express-graceful-exit';
 import { ChatServer } from './ChatServer';
 
-const chatServer = new ChatServer(3000);
+const chatServer = new ChatServer(10000);
 
 const app = chatServer.app;
 const server = chatServer.server;
@@ -14,12 +14,14 @@ const addProcessListeners = (): void => {
 };
 
 const shutdown = (): void => {
-  console.log('\n Shutting down gracefully');
-  gracefulExit.gracefulExitHandler(app, server, {
-    log: true,
-    socketio: io,
-    suicideTimeout: 20000,
-  });
+  chatServer.shutdown();
+  setTimeout(() => {
+    gracefulExit.gracefulExitHandler(app, server, {
+      log: true,
+      socketio: io,
+      suicideTimeout: 20000,
+    });
+  }, 5000);
 };
 
 addProcessListeners();
