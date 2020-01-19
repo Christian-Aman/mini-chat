@@ -2,7 +2,12 @@ import * as express from 'express';
 import { createServer, Server } from 'http';
 import * as socketIo from 'socket.io';
 import { Users } from './Users';
-import { generateServerMessage, logger, ioLogger, createWriter } from './utils';
+import {
+  generateServerMessage,
+  activityTimer,
+  logger,
+  createWriter,
+} from './utils';
 import {
   SERVER_ADD_MESSAGE,
   SERVER_CONNECT,
@@ -37,7 +42,7 @@ export class ChatServer {
     this.writer = createWriter('log/events.log', { flags: 'a' });
     this.initSocket();
     this.listen();
-    this.activityTimer();
+    this.setActivityTimer();
   }
 
   private initSocket(): void {
@@ -47,40 +52,15 @@ export class ChatServer {
     });
   }
 
-  private activityTimer(): void {
-    setInterval(() => {
-      let inactiveUsers = this.userList.checkInactivity(this.idleTimeout);
-      if (inactiveUsers) {
-        inactiveUsers.forEach(user => {
-          logger(
-            this.writer,
-            `User was disconnected due to inactivity`,
-            user.id,
-          );
-          this.userList.removeUser(user.id);
-          this._io.to(`${user.id}`).emit('action', {
-            type: DISCONNECT_USER,
-            data: generateServerMessage(
-              true,
-              user.id,
-              'You were disconnected due to inactivity',
-            ),
-          });
-          this._io.sockets.connected[user.id].leave(this.chatRoom);
-          this._io.to(this.chatRoom).emit('action', {
-            type: ADMIN_MESSAGE,
-            data: generateServerMessage(
-              true,
-              user.id,
-              `${user.username} was disconnected due to inactivity`,
-              'info',
-              user.username,
-            ),
-          });
-        });
-      }
-      inactiveUsers = [];
-    }, 1000);
+  private setActivityTimer(): void {
+    activityTimer(
+      this._io,
+      this.chatRoom,
+      this.userList,
+      this.idleTimeout,
+      this.writer,
+      1000,
+    );
   }
 
   private listen(): void {
@@ -183,7 +163,6 @@ export class ChatServer {
             break;
 
           case SERVER_ADD_MESSAGE:
-            // console.log(type, data);
             logger(
               this.writer,
               `New message: ${data.sender}: ${data.message}`,
@@ -232,11 +211,5 @@ export class ChatServer {
 
   public shutdown(): void {
     logger(this.writer, 'Shutting down server');
-    this._io
-      .to(this.chatRoom)
-      .emit(
-        'action',
-        generateServerMessage(true, '1', 'Server is going offline'),
-      );
   }
 }

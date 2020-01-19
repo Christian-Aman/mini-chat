@@ -15,13 +15,11 @@ const addProcessListeners = (): void => {
 
 const shutdown = (): void => {
   chatServer.shutdown();
-  setTimeout(() => {
-    gracefulExit.gracefulExitHandler(app, server, {
-      log: true,
-      socketio: io,
-      suicideTimeout: 20000,
-    });
-  }, 5000);
+  gracefulExit.gracefulExitHandler(app, server, {
+    log: true,
+    socketio: io,
+    suicideTimeout: 20000,
+  });
 };
 
 addProcessListeners();
